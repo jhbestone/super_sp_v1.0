@@ -1,0 +1,1253 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Super 广告全景分析</title>
+  <style>
+    :root {
+      --bg: #f3f4f6;
+      --panel: #ffffff;
+      --panel-soft: #f8fafc;
+      --text-main: #111827;
+      --text-muted: #6b7280;
+      --border: #e5e7eb;
+      --blue: #2563eb;
+      --blue-bg: #eff6ff;
+      --green: #059669;
+      --green-bg: #ecfdf5;
+      --red: #dc2626;
+      --red-bg: #fef2f2;
+      --amber: #d97706;
+      --amber-bg: #fffbeb;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      padding: 20px;
+    }
+
+    /* 顶部面板 */
+    .header-panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .hero {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .hero-title h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 8px;
+    }
+
+    .hero-title p {
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .meta-pills {
+      display: flex;
+      gap: 12px;
+    }
+
+    .pill {
+      border: 1px solid var(--border);
+      border-radius: 9999px;
+      padding: 6px 16px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      background: var(--panel-soft);
+    }
+
+    /* 主体布局 */
+    .main-layout {
+      display: grid;
+      grid-template-columns: minmax(200px, 280px) 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    /* 左侧侧边栏 */
+    .sidebar {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .sidebar-head {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--panel-soft);
+    }
+
+    .sidebar-head h2 { font-size: 16px; font-weight: 700; }
+    .sidebar-head p { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+    .category-list { padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+    
+    .cat-btn {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #fff;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-main);
+      transition: all 0.2s;
+    }
+    
+    .cat-btn:hover { border-color: var(--blue); }
+    .cat-btn.active {
+      border-color: var(--blue);
+      background: var(--blue-bg);
+      color: var(--blue);
+    }
+
+    /* 右侧工作区 */
+    .workspace {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .workspace-head {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      background: var(--panel-soft);
+    }
+    .workspace-head h2 { font-size: 16px; font-weight: 700; }
+    .workspace-head p { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+    /* 筛选器 */
+    .filters {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      align-items: end;
+    }
+
+    @media (min-width: 1200px) {
+      .filters {
+        grid-template-columns: 2fr 1fr 1fr 1fr auto;
+      }
+    }
+
+    .filter-group { display: flex; flex-direction: column; gap: 6px; }
+    .filter-group label { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+    
+    .filter-group input, 
+    .filter-group select {
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      color: var(--text-main);
+      outline: none;
+    }
+    .filter-group input:focus, 
+    .filter-group select:focus { border-color: var(--blue); box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1); }
+
+    .btn-group { display: flex; gap: 8px; }
+    .btn {
+      padding: 8px 16px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #fff;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      color: var(--text-main);
+      height: 36px;
+    }
+    .btn:hover { background: var(--panel-soft); }
+    .btn-primary { border-color: var(--blue); color: var(--blue); }
+    .btn-primary:hover { background: var(--blue-bg); }
+
+    /* 数据表格 */
+    .table-container {
+      overflow-x: auto;
+      min-height: 400px;
+      width: 100%;
+      flex: 1;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      table-layout: fixed;
+    }
+
+    th, td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      white-space: normal;
+      word-wrap: break-word;
+      word-break: break-word;
+    }
+
+    th:nth-child(1) { width: 10%; }   /* 类型 */
+    th:nth-child(2) { width: 10%; }   /* 广告组合 */
+    th:nth-child(3) { width: 18%; }  /* 广告活动名称 */
+    th:nth-child(4) { width: 15%; }  /* 广告组名称 */
+    th:nth-child(5) { width: 20%; }  /* 客户搜索词/ASIN */
+    th:nth-child(6) { width: 10%; }  /* 建议定向策略 */
+    th:nth-child(7) { width: 7%; }   /* 匹配类型 */
+    th:nth-child(8) { width: 10%; }  /* 建议策略洞察 */
+
+    th {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: #fff;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    td { font-size: 13px; }
+    
+    /* 标签状态 */
+    .chip-status {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .status-super { background: var(--green-bg); color: var(--green); }
+    .status-potential { background: var(--blue-bg); color: var(--blue); }
+    .status-high-comp { background: var(--amber-bg); color: var(--amber); }
+    .status-invalid { background: var(--red-bg); color: var(--red); }
+    
+  
+    /* 响应式适配 */
+    @media (max-width: 1024px) {
+      .main-layout {
+        grid-template-columns: 1fr;
+      }
+      .sidebar {
+        display: none;
+      }
+      .filters {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+      .hero {
+        flex-direction: column;
+        gap: 16px;
+      }
+      .filters {
+        grid-template-columns: 1fr;
+      }
+      th, td {
+        padding: 10px 8px;
+        font-size: 12px;
+      }
+    }
+
+  
+    /* ========== 新增顶部板块样式 ========== */
+    .campaign-metrics {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .metrics-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      background: var(--panel-soft);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .metrics-header h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    .metrics-body {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      padding: 20px;
+      gap: 16px;
+    }
+    .metric-item {
+      text-align: center;
+      padding: 12px;
+      border-radius: 6px;
+      background: var(--panel-soft);
+    }
+    .metric-item .label {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    .metric-item .value {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    
+    /* 花费结构 */
+    .spend-structure {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+    }
+    .spend-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      padding: 20px;
+      gap: 16px;
+    }
+    .spend-item {
+      padding: 16px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+    .spend-item .label {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+    .spend-item .value {
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .spend-item.asin-no-order .value { color: var(--red); }
+    .spend-item.asin-has-order .value { color: var(--green); }
+    .spend-item.keyword-no-order .value { color: var(--amber); }
+    .spend-item.keyword-has-order .value { color: var(--blue); }
+    .spend-item.keyword-total .value { color: var(--text-main); }
+    
+    .spend-pct-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      padding: 0 20px 20px;
+      gap: 16px;
+    }
+    .pct-item {
+      padding: 12px;
+      border-radius: 6px;
+      background: var(--panel-soft);
+      text-align: center;
+    }
+    .pct-item .label {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .pct-item .value {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--red);
+    }
+    
+    .tooltip-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--border);
+      color: var(--text-muted);
+      font-size: 10px;
+      font-weight: 700;
+      cursor: help;
+      margin-left: 4px;
+      position: relative;
+    }
+    .tooltip-icon:hover::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--text-main);
+      color: #fff;
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 400;
+      white-space: nowrap;
+      z-index: 100;
+      margin-bottom: 4px;
+    }
+
+    /* ========== 筛选统计条 ========== */
+    .filter-stats {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      padding: 12px 24px;
+      border-bottom: 1px solid var(--border);
+      background: #fff;
+    }
+    .filter-stats .stat-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 8px 16px;
+      border-right: 1px solid var(--border);
+      min-width: 120px;
+    }
+    .filter-stats .stat-item:last-child { border-right: none; }
+    .filter-stats .stat-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .filter-stats .stat-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-main);
+      text-align: center;
+    }
+    .filter-stats .stat-value.acos-good { color: var(--green); }
+    .filter-stats .stat-value.acos-warn { color: var(--amber); }
+    .filter-stats .stat-value.acos-bad { color: var(--red); }
+    .filter-stats .stat-divider {
+      width: 1px;
+      height: 40px;
+      background: var(--border);
+    }
+    .filter-stats .stat-count-info {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-left: auto;
+      padding-left: 16px;
+      white-space: nowrap;
+    }
+
+    /* ========== 表格水平滚动 ========== */
+    .table-scroll-wrap {
+      position: relative;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .scroll-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: #fff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      cursor: pointer;
+      z-index: 20;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-muted);
+      transition: all 0.2s;
+    }
+    .scroll-btn:hover {
+      background: var(--blue-bg);
+      color: var(--blue);
+      border-color: var(--blue);
+    }
+    .scroll-btn-left { left: 8px; }
+    .scroll-btn-right { right: 8px; }
+    .table-scroll-wrap:hover .scroll-btn { display: flex; }
+
+    .table-container {
+      overflow-x: auto;
+      min-height: 400px;
+      width: 100%;
+      flex: 1;
+      scroll-behavior: smooth;
+    }
+    .table-container::-webkit-scrollbar {
+      height: 10px;
+    }
+    .table-container::-webkit-scrollbar-track {
+      background: var(--panel-soft);
+      border-radius: 5px;
+    }
+    .table-container::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 5px;
+    }
+    .table-container::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      table-layout: auto;
+      min-width: 1200px;
+    }
+
+    /* ========== 侧栏分类统计数 ========== */
+    .count-badge {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: var(--panel-soft);
+      padding: 2px 10px;
+      border-radius: 9999px;
+      min-width: 24px;
+      text-align: center;
+    }
+    .cat-btn.active .count-badge {
+      background: var(--blue);
+      color: #fff;
+    }
+    .cat-btn .count-badge {
+      transition: all 0.2s;
+    }
+
+    /* ========== 分页控件 ========== */
+    .pagination-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 24px;
+      border-top: 1px solid var(--border);
+      background: var(--panel-soft);
+      flex-shrink: 0;
+    }
+    .pagination-info {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .pagination-controls {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .page-btn {
+      padding: 6px 12px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: #fff;
+      font-size: 13px;
+      cursor: pointer;
+      color: var(--text-main);
+      transition: all 0.15s;
+      min-width: 36px;
+      text-align: center;
+    }
+    .page-btn:hover { border-color: var(--blue); color: var(--blue); }
+    .page-btn.active {
+      background: var(--blue);
+      color: #fff;
+      border-color: var(--blue);
+    }
+    .page-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .page-jump {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-left: 8px;
+    }
+    .page-jump input {
+      width: 50px;
+      padding: 4px 6px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 13px;
+      text-align: center;
+    }
+    .page-jump input:focus { border-color: var(--blue); outline: none; }
+
+    /* ========== 排序头 ========== */
+    th { user-select: none; }
+    th:hover { background: #f1f5f9; }
+    .sort-icon { font-size: 11px; margin-left: 2px; color: #94a3b8; }
+    th.sort-active .sort-icon { color: var(--blue); font-weight: 700; }
+    th .sort-icon { display: inline-block; min-width: 14px; }
+
+  </style>
+</head>
+<body>
+
+  <div class="header-panel">
+    <div class="hero">
+      <div class="hero-title">
+        <h1>SP 广告全景分析系统</h1>
+        <p>数据来源：系统解析｜ 生成时间：{{GENERATED_TIME}}</p>
+      </div>
+      <div class="meta-pills">
+        <span class="pill">目标 ACoS 30.0%</span>
+        <span class="pill">搜索词 31,661</span>
+        <span class="pill">施健|公众号：菜先生的nas</span>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 选定的广告活动指标 -->
+  <div class="campaign-metrics">
+    <div class="metrics-header">
+      <h3>选定的广告活动指标</h3>
+      <span style="font-size: 12px; color: var(--text-muted);">基于已选广告活动计算</span>
+    </div>
+    <div class="metrics-body">
+      <div class="metric-item">
+        <div class="label">已选广告活动数量</div>
+        <div class="value" id="metrics-campaign-count">-</div>
+      </div>
+      <div class="metric-item">
+        <div class="label">30天花费</div>
+        <div class="value" id="metrics-cost">-</div>
+      </div>
+      <div class="metric-item">
+        <div class="label">30天点击次数<span class="tooltip-icon" data-tooltip="总点击量">①</span></div>
+        <div class="value" id="metrics-clicks">-</div>
+      </div>
+      <div class="metric-item">
+        <div class="label">30天订单<span class="tooltip-icon" data-tooltip="总订单数">①</span></div>
+        <div class="value" id="metrics-orders">-</div>
+      </div>
+      <div class="metric-item">
+        <div class="label">30天广告销售额</div>
+        <div class="value" id="metrics-sales">-</div>
+      </div>
+      <div class="metric-item">
+        <div class="label">30天转化率<span class="tooltip-icon" data-tooltip="总订单数/总点击量*100%">①</span></div>
+        <div class="value" id="metrics-conv-rate">-</div>
+      </div>
+      <div class="metric-item">
+        <div class="label">30天ACoS<span class="tooltip-icon" data-tooltip="广告花费/广告销售额*100%">①</span></div>
+        <div class="value" id="metrics-acos">-</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 花费结构 -->
+  <div class="spend-structure">
+    <div class="metrics-header">
+      <h3>花费结构</h3>
+    </div>
+    <div class="spend-grid">
+      <div class="spend-item asin-no-order">
+        <div class="label">ASIN~不出单 总花费<span class="tooltip-icon" data-tooltip="客户搜索词为ASIN，且订单=0">①</span></div>
+        <div class="value" id="spend-asin-no-order">{{ASIN_NO_ORDER}}</div>
+      </div>
+      <div class="spend-item asin-has-order">
+        <div class="label">ASIN~出单 总花费<span class="tooltip-icon" data-tooltip="客户搜索词为ASIN，且订单>0">①</span></div>
+        <div class="value" id="spend-asin-has-order">{{ASIN_HAS_ORDER}}</div>
+      </div>
+      <div class="spend-item asin-total">
+        <div class="label">ASIN总花费<span class="tooltip-icon" data-tooltip="客户搜索词为ASIN的总花费">①</span></div>
+        <div class="value" id="spend-asin-total">{{ASIN_TOTAL}}</div>
+      </div>
+      <div class="spend-item keyword-no-order">
+        <div class="label">关键词~不出单 总花费<span class="tooltip-icon" data-tooltip="客户搜索词不是ASIN，且订单=0">①</span></div>
+        <div class="value" id="spend-keyword-no-order">{{KEYWORD_NO_ORDER}}</div>
+      </div>
+      <div class="spend-item keyword-has-order">
+        <div class="label">关键词~出单 总花费<span class="tooltip-icon" data-tooltip="客户搜索词不是ASIN，且订单>0">①</span></div>
+        <div class="value" id="spend-keyword-has-order">{{KEYWORD_HAS_ORDER}}</div>
+      </div>
+      <div class="spend-item keyword-total">
+        <div class="label">关键词总花费<span class="tooltip-icon" data-tooltip="客户搜索词不是ASIN的关键词总花费">①</span></div>
+        <div class="value" id="spend-keyword-total">{{KEYWORD_TOTAL}}</div>
+      </div>
+    </div>
+    <div class="spend-pct-grid">
+      <div class="pct-item">
+        <div class="label">关键词~不出单 花费占比</div>
+        <div class="value" id="pct-keyword-no-order">{{KEYWORD_NO_ORDER_PCT}}</div>
+      </div>
+      <div class="pct-item">
+        <div class="label">高点击~不出单 花费占比<span class="tooltip-icon" data-tooltip="点击数>17次且订单=0">①</span></div>
+        <div class="value" id="pct-high-click">{{HIGH_CLICK_PCT}}</div>
+      </div>
+      <div class="pct-item">
+        <div class="label">低点击~不出单 花费占比<span class="tooltip-icon" data-tooltip="点击数<5次且订单=0">①</span></div>
+        <div class="value" id="pct-low-click">{{LOW_CLICK_PCT}}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-layout">
+
+    
+    <div class="sidebar">
+      <div class="sidebar-head">
+        <h2>14 维组合类型</h2>
+        <p>按 Super 分析逻辑切换视图</p>
+      </div>
+      <div class="category-list" id="categoryList">
+        <button class="cat-btn active" onclick="filterCategory('全部', event)">
+          <span>全部 14 种分类</span> <span id="count-全部" class="count-badge">0</span>
+        </button>
+        <button class="cat-btn" onclick="filterCategory('超级关键词', event)"><span>1. 超级关键词</span> <span id="count-超级关键词" class="count-badge">0</span></button>
+        <button class="cat-btn" onclick="filterCategory('超级ASIN', event)"><span>2. 超级ASIN</span> <span id="count-超级ASIN" class="count-badge">0</span></button>
+        <button class="cat-btn" onclick="filterCategory('高潜力关键词', event)"><span>3. 高潜力关键词</span> <span id="count-高潜力关键词" class="count-badge">0</span></button>
+        <button class="cat-btn" onclick="filterCategory('高潜力ASIN', event)"><span>4. 高潜力ASIN</span> <span id="count-高潜力ASIN" class="count-badge">0</span></button>
+        <button class="cat-btn" onclick="filterCategory('次级潜力关键词', event)"><span>5. 次级潜力关键词</span> <span id="count-次级潜力关键词" class="count-badge">0</span></button>
+        <button class="cat-btn" onclick="filterCategory('次级潜力ASIN', event)"><span>6. 次级潜力ASIN</span> <span id="count-次级潜力ASIN" class="count-badge">0</span></button>
+        <button class="cat-btn" onclick="filterCategory('高竞争关键词', event)"><span>7. 高竞争关键词</span> <span id="count-高竞争关键词" class="count-badge">0</span></button>
+        <button class="cat-btn" onclick="filterCategory('高竞争ASIN', event)"><span>8. 高竞争ASIN</span> <span id="count-高竞争ASIN" class="count-badge">0</span></button>
+        <button class="cat-btn" onclick="filterCategory('低效关键词', event)"><span>9. 低效关键词</span> <span id="count-低效关键词" class="count-badge">0</span></button>
+        <button class="cat-btn" onclick="filterCategory('低效ASIN', event)"><span>10. 低效ASIN</span> <span id="count-低效ASIN" class="count-badge">0</span></button>
+        <button class="cat-btn" onclick="filterCategory('无竞争力关键词', event)"><span>11. 无竞争力关键词</span> <span id="count-无竞争力关键词" class="count-badge">0</span></button>
+        <button class="cat-btn" onclick="filterCategory('无竞争力ASIN', event)"><span>12. 无竞争力ASIN</span> <span id="count-无竞争力ASIN" class="count-badge">0</span></button>
+        <button class="cat-btn" onclick="filterCategory('无效关键词', event)"><span>13. 无效关键词</span> <span id="count-无效关键词" class="count-badge">0</span></button>
+        <button class="cat-btn" onclick="filterCategory('无效ASIN', event)"><span>14. 无效ASIN</span> <span id="count-无效ASIN" class="count-badge">0</span></button>
+      </div>
+    </div>
+
+    <div class="workspace">
+      <div class="workspace-head">
+        <h2>操作筛选</h2>
+        <p>搜索、筛选和排序当前报告结果</p>
+      </div>
+      
+      <div class="filters">
+        <div class="filter-group">
+          <label>搜索</label>
+          <input type="text" id="searchInput" placeholder="广告活动 / 搜索词 / ASIN">
+        </div>
+        <div class="filter-group">
+          <label>广告组合 (Portfolio)</label>
+          <select id="portfolioSelect">
+            <option value="全部">全部组合</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>广告活动</label>
+          <select id="campaignSelect">
+            <option value="全部">全部活动</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>匹配类型</label>
+          <select id="matchSelect">
+            <option value="全部">全部匹配</option>
+            <option value="EXACT">EXACT (精准)</option>
+            <option value="PHRASE">PHRASE (词组)</option>
+            <option value="BROAD">BROAD (广泛)</option>
+            <option value="NEGATIVE_EXACT">NEGATIVE_EXACT</option>
+            <option value="-">商品投放 (-)</option>
+          </select>
+        </div>
+        <div class="btn-group">
+          <button class="btn" onclick="resetFilters()">重置</button>
+          <button class="btn btn-primary" onclick="exportCSV()">导出 CSV</button>
+        </div>
+      </div>
+
+      <div class="table-scroll-wrap">
+        <button class="scroll-btn scroll-btn-left" onclick="scrollTable(-300)">&#10094;</button>
+        <button class="scroll-btn scroll-btn-right" onclick="scrollTable(300)">&#10095;</button>
+      <div class="table-container">
+        <table id="dataTable">
+          <thead>
+            <tr>
+              <th style="width: 120px; cursor: pointer;" onclick="sortTable('类型')">类型 <span class="sort-icon" id="sort-类型"></span></th>
+              <th style="width: 100px; cursor: pointer;" onclick="sortTable('广告组合')">广告组合 <span class="sort-icon" id="sort-广告组合"></span></th>
+              <th style="width: 200px; cursor: pointer;" onclick="sortTable('广告活动名称')">广告活动名称 <span class="sort-icon" id="sort-广告活动名称"></span></th>
+              <th style="width: 200px; cursor: pointer;" onclick="sortTable('广告组名称')">广告组名称 <span class="sort-icon" id="sort-广告组名称"></span></th>
+              <th style="width: 200px; cursor: pointer;" onclick="sortTable('客户搜索词/ASIN')">客户搜索词/ASIN <span class="sort-icon" id="sort-客户搜索词/ASIN"></span></th>
+              <th style="cursor: pointer;" onclick="sortTable('建议定向策略')">建议定向策略 <span class="sort-icon" id="sort-建议定向策略"></span></th>
+              <th style="cursor: pointer;" onclick="sortTable('匹配类型')">匹配类型 <span class="sort-icon" id="sort-匹配类型"></span></th>
+              <th style="cursor: pointer;" onclick="sortTable('建议策略洞察')">建议策略洞察 <span class="sort-icon" id="sort-建议策略洞察"></span></th>
+              <th style="width: 85px; cursor: pointer;" onclick="sortTable('clicks')">点击量 <span class="sort-icon" id="sort-clicks"></span></th>
+              <th style="width: 100px; cursor: pointer;" onclick="sortTable('cost')">花费 <span class="sort-icon" id="sort-cost"></span></th>
+              <th style="width: 100px; cursor: pointer;" onclick="sortTable('sales')">销售额 <span class="sort-icon" id="sort-sales"></span></th>
+              <th style="width: 65px; cursor: pointer;" onclick="sortTable('orders')">订单数 <span class="sort-icon" id="sort-orders"></span></th>
+              <th style="width: 75px; cursor: pointer;" onclick="sortTable('acos')">ACoS <span class="sort-icon" id="sort-acos"></span></th>
+            </tr>
+          </thead>
+          <tbody>
+            </tbody>
+        </table>
+        </div>
+        <!-- 分页控件 -->
+        <div class="pagination-bar" id="paginationBar">
+          <div class="pagination-info" id="paginationInfo">共 0 条，第 1/1 页</div>
+          <div class="pagination-controls" id="paginationControls">
+            <button class="page-btn" onclick="goPage(1)">首页</button>
+            <button class="page-btn" onclick="goPage(currentPage - 1)">‹</button>
+            <span id="pageNumbers"></span>
+            <button class="page-btn" onclick="goPage(currentPage + 1)">›</button>
+            <button class="page-btn" onclick="goPage(totalPages)">末页</button>
+            <span class="page-jump">
+              跳至 <input type="number" id="pageJumpInput" min="1" value="1" onkeydown="if(event.key==='Enter')jumpToPage()"> 页
+              <button class="page-btn" onclick="jumpToPage()">GO</button>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 注入真实截取的前 30 条核心解析数据
+    const mockData = [{"类型": "超级关键词", "广告组合": "-", "广告活动名称": "RES-JD02-gaming chair-精准-0606", "广告组名称": "JD02gaming chair精准", "客户搜索词/ASIN": "small gaming chair", "建议定向策略": "关键词投放", "匹配类型": "PHRASE", "建议策略洞察": "增加预算和溢价，优先推广"}, {"类型": "超级关键词", "广告组合": "-", "广告活动名称": "RES-JD02-cat cute kawaii-广泛", "广告组名称": "RES-JD02-cat cute kawaii-广泛", "客户搜索词/ASIN": "small gaming chair", "建议定向策略": "关键词投放", "匹配类型": "PHRASE", "建议策略洞察": "增加预算和溢价，优先推广"}, {"类型": "超级关键词", "广告组合": "-", "广告活动名称": "JD-02-pink cat gaming chair-广泛", "广告组名称": "RES-JD-02-pink cat gaming chair", "客户搜索词/ASIN": "small gaming chair", "建议定向策略": "关键词投放", "匹配类型": "PHRASE", "建议策略洞察": "增加预算和溢价，优先推广"}, {"类型": "超级关键词", "广告组合": "-", "广告活动名称": "RES-Keyword Targeting-JD03-20250320-2", "广告组名称": "RES-Keyword Targeting-JD03-20250320-2", "客户搜索词/ASIN": "gamer chair with footrest", "建议定向策略": "关键词投放", "匹配类型": "PHRASE", "建议策略洞察": "增加预算和溢价，优先推广"}, {"类型": "超级关键词", "广告组合": "-", "广告活动名称": "JD-02gamer chair精准", "广告组名称": "JD02gamer chair精准", "客户搜索词/ASIN": "gamer chair with footrest", "建议定向策略": "关键词投放", "匹配类型": "PHRASE", "建议策略洞察": "增加预算和溢价，优先推广"}, {"类型": "次级潜力关键词", "广告组合": "-", "广告活动名称": "JD-02-pukami pink gaming chair-广泛", "广告组名称": "RES-JD-02-pukami pink gaming chair", "客户搜索词/ASIN": "gaming chair big and tall", "建议定向策略": "关键词投放", "匹配类型": "PHRASE", "建议策略洞察": "增加预算测试潜力，尝试提升转化率：优化详情页"}, {"类型": "次级潜力关键词", "广告组合": "-", "广告活动名称": "RES-JD14-Big and Tall Chair-新", "广告组名称": "RES-JD14-Big and Tall Chair", "客户搜索词/ASIN": "gaming chair big and tall", "建议定向策略": "关键词投放", "匹配类型": "PHRASE", "建议策略洞察": "增加预算测试潜力，尝试提升转化率：优化详情页"}, {"类型": "次级潜力关键词", "广告组合": "-", "广告活动名称": "RES-Keyword Targeting-JD15-20250326", "广告组名称": "RES-Keyword Targeting-JD15-20250329", "客户搜索词/ASIN": "gaming chair big and tall", "建议定向策略": "关键词投放", "匹配类型": "PHRASE", "建议策略洞察": "增加预算测试潜力，尝试提升转化率：优化详情页"}, {"类型": "次级潜力关键词", "广告组合": "-", "广告活动名称": "RES-JD-07/08-SP-gaming chair-Broad", "广告组名称": "JD-07/08-SP-gaming chair-Broad-PlusPro", "客户搜索词/ASIN": "gaming chair big and tall", "建议定向策略": "关键词投放", "匹配类型": "PHRASE", "建议策略洞察": "增加预算测试潜力，尝试提升转化率：优化详情页"}, {"类型": "次级潜力关键词", "广告组合": "-", "广告活动名称": "JD-03-gaming chairs-词组", "广告组名称": "JD-03-gaming chairs-词组", "客户搜索词/ASIN": "gaming chair big and tall", "建议定向策略": "关键词投放", "匹配类型": "PHRASE", "建议策略洞察": "增加预算测试潜力，尝试提升转化率：优化详情页"}, {"类型": "次级潜力关键词", "广告组合": "-", "广告活动名称": "RES-JD08-vigosit-精准词组", "广告组名称": "JD-08 US 投放vigosit 精准和词组匹配", "客户搜索词/ASIN": "gaming chair big and tall", "建议定向策略": "关键词投放", "匹配类型": "PHRASE", "建议策略洞察": "增加预算测试潜力，尝试提升转化率：优化详情页"}, {"类型": "超级关键词", "广告组合": "-", "广告活动名称": "RES-Keyword Targeting-JD13-20250505-1", "广告组名称": "RES-Keyword Targeting-JD13-20250505-1", "客户搜索词/ASIN": "criss cross office chair with arms", "建议定向策略": "关键词投放", "匹配类型": "PHRASE", "建议策略洞察": "增加预算和溢价，优先推广"}, {"类型": "超级关键词", "广告组合": "-", "广告活动名称": "RES-JD13-mt-Auto-中竞价", "广告组名称": "RES-JD13-mt-Auto-中竞价", "客户搜索词/ASIN": "criss cross office chair with arms", "建议定向策略": "关键词投放", "匹配类型": "PHRASE", "建议策略洞察": "增加预算和溢价，优先推广"}, {"类型": "超级关键词", "广告组合": "-", "广告活动名称": "JD-03-gaming chairs-词组", "广告组名称": "JD-03-gaming chairs-词组", "客户搜索词/ASIN": "onegame video gaming chair", "建议定向策略": "关键词投放", "匹配类型": "PHRASE", "建议策略洞察": "增加预算和溢价，优先推广"}, {"类型": "次级潜力关键词", "广告组合": "-", "广告活动名称": "RES-JD02-gaming chair pink-精准-Y-0606", "广告组名称": "JD02gaming chair pink精准Y", "客户搜索词/ASIN": "gaming chair massage", "建议定向策略": "关键词投放", "匹配类型": "PHRASE", "建议策略洞察": "增加预算测试潜力，尝试提升转化率：优化详情页"}, {"类型": "次级潜力关键词", "广告组合": "-", "广告活动名称": "JD-07/08-Auto-紧密", "广告组名称": "JD-07/08-Auto-紧密", "客户搜索词/ASIN": "gaming chair massage", "建议定向策略": "关键词投放", "匹配类型": "PHRASE", "建议策略洞察": "增加预算测试潜力，尝试提升转化率：优化详情页"}, {"类型": "次级潜力关键词", "广告组合": "-", "广告活动名称": "JD02gaming chair精准Y", "广告组名称": "JD02gaming chair精准", "客户搜索词/ASIN": "gaming chair massage", "建议定向策略": "关键词投放", "匹配类型": "PHRASE", "建议策略洞察": "增加预算测试潜力，尝试提升转化率：优化详情页"}, {"类型": "次级潜力关键词", "广告组合": "-", "广告活动名称": "JD-03-gaming chairs-词组", "广告组名称": "JD-03-gaming chairs-词组", "客户搜索词/ASIN": "gaming chair massage", "建议定向策略": "关键词投放", "匹配类型": "PHRASE", "建议策略洞察": "增加预算测试潜力，尝试提升转化率：优化详情页"}, {"类型": "次级潜力关键词", "广告组合": "-", "广告活动名称": "RES-JD0708-PT-DOWINX", "广告组名称": "RES-JD0708-PT-DOWINX-PlusPRO", "客户搜索词/ASIN": "gaming chair massage", "建议定向策略": "关键词投放", "匹配类型": "PHRASE", "建议策略洞察": "增加预算测试潜力，尝试提升转化率：优化详情页"}, {"类型": "次级潜力关键词", "广告组合": "-", "广告活动名称": "RES-JD08-vigosit-精准词组", "广告组名称": "JD-08 US 投放vigosit 精准和词组匹配", "客户搜索词/ASIN": "gaming chair massage", "建议定向策略": "关键词投放", "匹配类型": "PHRASE", "建议策略洞察": "增加预算测试潜力，尝试提升转化率：优化详情页"}, {"类型": "超级关键词", "广告组合": "-", "广告活动名称": "RES-JD02-gaming chair pink-精准-Y-0606", "广告组名称": "JD02gaming chair pink精准Y", "客户搜索词/ASIN": "silla gamer rosada", "建议定向策略": "关键词投放", "匹配类型": "PHRASE", "建议策略洞察": "增加预算和溢价，优先推广"}, {"类型": "超级关键词", "广告组合": "-", "广告活动名称": "JD-02gamer chair精准Y", "广告组名称": "JD-02gamer chair精准Y", "客户搜索词/ASIN": "pink chair gaming", "建议定向策略": "关键词投放", "匹配类型": "PHRASE", "建议策略洞察": "增加预算和溢价，优先推广"}, {"类型": "超级关键词", "广告组合": "-", "广告活动名称": "JD-02-pink cat gaming chair-广泛", "广告组名称": "RES-JD-02-pink cat gaming chair", "客户搜索词/ASIN": "pink chair gaming", "建议定向策略": "关键词投放", "匹配类型": "PHRASE", "建议策略洞察": "增加预算和溢价，优先推广"}, {"类型": "超级关键词", "广告组合": "-", "广告活动名称": "JD-13-vigosit criss cross chair with wheels-广泛", "广告组名称": "JD-13-vigosit criss cross chair with wheels-广泛", "客户搜索词/ASIN": "vigosit criss cross chair", "建议定向策略": "关键词投放", "匹配类型": "PHRASE", "建议策略洞察": "增加预算和溢价，优先推广"}, {"类型": "超级关键词", "广告组合": "-", "广告活动名称": "RES-JD13-mt-Auto-低竞价", "广告组名称": "RES-JD13-mt-Auto-低竞价", "客户搜索词/ASIN": "vigosit criss cross chair", "建议定向策略": "关键词投放", "匹配类型": "PHRASE", "建议策略洞察": "增加预算和溢价，优先推广"}, {"类型": "超级关键词", "广告组合": "-", "广告活动名称": "RES-JD13-ykt-Auto-低竞价", "广告组名称": "RES-JD13-ykt-Auto-低竞价", "客户搜索词/ASIN": "vigosit criss cross chair", "建议定向策略": "关键词投放", "匹配类型": "PHRASE", "建议策略洞察": "增加预算和溢价，优先推广"}, {"类型": "超级关键词", "广告组合": "-", "广告活动名称": "RES-JD13-ykt-Auto-中竞价", "广告组名称": "RES-JD13-ykt-Auto-中竞价", "客户搜索词/ASIN": "vigosit criss cross chair", "建议定向策略": "关键词投放", "匹配类型": "PHRASE", "建议策略洞察": "增加预算和溢价，优先推广"}, {"类型": "超级关键词", "广告组合": "-", "广告活动名称": "RES-JD13-criss cross chair-词组", "广告组名称": "RES-JD13-criss cross chair-词组", "客户搜索词/ASIN": "vigosit criss cross chair", "建议定向策略": "关键词投放", "匹配类型": "PHRASE", "建议策略洞察": "增加预算和溢价，优先推广"}, {"类型": "超级关键词", "广告组合": "-", "广告活动名称": "RES-JD03-gaming chairs for adults-广泛", "广告组名称": "jd-03-PLUS", "客户搜索词/ASIN": "heavy duty gaming chair 500 lb capacity", "建议定向策略": "关键词投放", "匹配类型": "PHRASE", "建议策略洞察": "增加预算和溢价，优先推广"}, {"类型": "超级关键词", "广告组合": "-", "广告活动名称": "RES-Keyword Targeting-JD13-20250507", "广告组名称": "RES-Keyword Targeting-JD13-20250507", "客户搜索词/ASIN": "cream office chair", "建议定向策略": "关键词投放", "匹配类型": "PHRASE", "建议策略洞察": "增加预算和溢价，优先推广"}];
+
+    let currentData = mockData;
+    let currentCategory = '全部';
+    let currentPage = 1;
+    const pageSize = 50;
+    let totalPages = 1;
+    let sortColumn = null;
+    let sortDirection = null; // 'asc' or 'desc'
+
+    // 颜色配置映射
+    function getStatusClass(type) {
+      if (type.includes('超级')) return 'status-super';
+      if (type.includes('潜力')) return 'status-potential';
+      if (type.includes('高竞争')) return 'status-high-comp';
+      if (type.includes('无效') || type.includes('无竞争力')) return 'status-invalid';
+      return '';
+    }
+
+    // 初始化下拉菜单
+    function initSelects() {
+      // 处理 "-" 为 "No Portfolio"
+      mockData.forEach(d => {
+        if (d['广告组合'] === '-') d['广告组合'] = 'No Portfolio';
+      });
+
+      // 建立 Portfolio -> Campaigns 映射关系
+      window.portfolioCampaignMap = {};
+      const portfolios = [...new Set(mockData.map(d => d['广告组合']))];
+      portfolios.forEach(p => {
+        window.portfolioCampaignMap[p] = [...new Set(mockData.filter(d => d['广告组合'] === p).map(d => d['广告活动名称']))];
+      });
+      
+      const portSelect = document.getElementById('portfolioSelect');
+      portfolios.forEach(p => portSelect.add(new Option(p, p)));
+      
+      // 初始填充所有活动
+      const campSelect = document.getElementById('campaignSelect');
+      const allCampaigns = [...new Set(mockData.map(d => d['广告活动名称']))];
+      allCampaigns.forEach(c => campSelect.add(new Option(c, c)));
+    }
+
+    // 根据选中的 Portfolio 动态更新 Campaign 选项
+    function updateCampaignDropdown(portfolioValue) {
+      const campSelect = document.getElementById('campaignSelect');
+      campSelect.innerHTML = '<option value="全部">全部活动</option>';
+      
+      let campaigns;
+      if (portfolioValue === '全部') {
+        campaigns = [...new Set(mockData.map(d => d['广告活动名称']))];
+      } else {
+        campaigns = window.portfolioCampaignMap[portfolioValue] || [];
+      }
+      
+      campaigns.forEach(c => campSelect.add(new Option(c, c)));
+      // 如果当前选中的活动不在新列表中，重置为全部
+      if (campSelect.value !== '全部' && ![...campSelect.options].some(o => o.value === campSelect.value)) {
+        campSelect.value = '全部';
+      }
+    }
+
+    // 渲染表格（分页）
+    function renderTable() {
+      const tbody = document.querySelector('#dataTable tbody');
+      tbody.innerHTML = '';
+
+      applySort();
+      totalPages = Math.max(1, Math.ceil(currentData.length / pageSize));
+      if (currentPage > totalPages) currentPage = totalPages;
+      const start = (currentPage - 1) * pageSize;
+      const end = Math.min(start + pageSize, currentData.length);
+      const pageData = currentData.slice(start, end);
+
+      pageData.forEach(row => {
+        const tr = document.createElement('tr');
+        const cost = parseFloat(row.cost) || 0;
+        const sales = parseFloat(row.sales) || 0;
+        const clicks = parseFloat(row.clicks) || 0;
+        const orders = parseFloat(row.orders) || 0;
+        const acos = sales > 0 ? ((cost / sales) * 100).toFixed(1) + '%' : '0.0%';
+        tr.innerHTML = `
+          <td><span class="chip-status ${getStatusClass(row['类型'])}">${row['类型']}</span></td>
+          <td>${row['广告组合']}</td>
+          <td>${row['广告活动名称']}</td>
+          <td>${row['广告组名称']}</td>
+          <td style="font-weight: 500;">${row['客户搜索词/ASIN']}</td>
+          <td>${row['建议定向策略']}</td>
+          <td>${row['匹配类型']}</td>
+          <td style="color: var(--text-muted);">${row['建议策略洞察']}</td>
+          <td style="text-align: right;">${clicks.toLocaleString('en-US')}</td>
+          <td style="text-align: right;">$${cost.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+          <td style="text-align: right;">$${sales.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+          <td style="text-align: right;">${orders.toLocaleString('en-US')}</td>
+          <td style="text-align: right; font-weight: 600; ${acos === '0.0%' ? '' : (parseFloat(acos) < 20 ? 'color:var(--green)' : (parseFloat(acos) < 35 ? 'color:var(--amber)' : 'color:var(--red)'))}">${acos}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      updateCategoryCounts();
+      renderPagination();
+    }
+
+    // 渲染分页按钮
+    function renderPagination() {
+      document.getElementById('paginationInfo').textContent = '共 ' + currentData.length + ' 条，第 ' + currentPage + '/' + totalPages + ' 页';
+
+      const container = document.getElementById('pageNumbers');
+      container.innerHTML = '';
+      const maxVisible = 7;
+      let startP = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+      let endP = Math.min(totalPages, startP + maxVisible - 1);
+      if (endP - startP + 1 < maxVisible) startP = Math.max(1, endP - maxVisible + 1);
+
+      for (let i = startP; i <= endP; i++) {
+        const btn = document.createElement('button');
+        btn.className = 'page-btn' + (i === currentPage ? ' active' : '');
+        btn.textContent = i;
+        btn.onclick = function() { goPage(i); };
+        container.appendChild(btn);
+      }
+
+      document.getElementById('pageJumpInput').value = currentPage;
+
+      // 启用/禁用首末页按钮
+      const btns = document.querySelectorAll('.pagination-controls .page-btn');
+      if (btns.length >= 4) {
+        btns[0].disabled = currentPage <= 1;
+        btns[1].disabled = currentPage <= 1;
+        btns[btns.length - 2].disabled = currentPage >= totalPages;
+        btns[btns.length - 1].disabled = currentPage >= totalPages;
+      }
+    }
+
+    // 跳转页面
+    function goPage(page) {
+      if (page < 1 || page > totalPages) return;
+      currentPage = page;
+      renderTable();
+    }
+
+    // 跳转到输入页
+    function jumpToPage() {
+      const input = document.getElementById('pageJumpInput');
+      let page = parseInt(input.value);
+      if (isNaN(page) || page < 1) page = 1;
+      if (page > totalPages) page = totalPages;
+      goPage(page);
+    }
+
+    // 排序
+    function sortTable(col) {
+      if (sortColumn === col) {
+        sortDirection = sortDirection === 'asc' ? 'desc' : (sortDirection === 'desc' ? null : 'asc');
+      } else {
+        sortColumn = col;
+        sortDirection = 'asc';
+      }
+      applySort();
+      renderTable();
+    }
+
+    function applySort() {
+      // 更新表头图标
+      document.querySelectorAll('th .sort-icon').forEach(el => el.textContent = '');
+      document.querySelectorAll('th').forEach(el => el.classList.remove('sort-active'));
+      if (!sortColumn || !sortDirection) return;
+
+      const iconEl = document.getElementById('sort-' + sortColumn);
+      if (!iconEl) return;
+      iconEl.textContent = sortDirection === 'asc' ? '▲' : '▼';
+      const th = iconEl.closest('th');
+      if (th) th.classList.add('sort-active');
+
+      // 执行排序
+      currentData.sort((a, b) => {
+        let va = a[sortColumn], vb = b[sortColumn];
+        // 数值字段
+        if (['cost', 'sales', 'clicks', 'orders'].includes(sortColumn)) {
+          va = parseFloat(va) || 0;
+          vb = parseFloat(vb) || 0;
+        } else if (sortColumn === 'acos') {
+          // ACoS: 从原始 cost/sales 计算
+          const ca = parseFloat(a.cost) || 0, sa = parseFloat(a.sales) || 0;
+          const cb = parseFloat(b.cost) || 0, sb = parseFloat(b.sales) || 0;
+          va = sa > 0 ? ca / sa : 0;
+          vb = sb > 0 ? cb / sb : 0;
+        } else {
+          va = (va || '').toString();
+          vb = (vb || '').toString();
+        }
+        if (va < vb) return sortDirection === 'asc' ? -1 : 1;
+        if (va > vb) return sortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    // 更新侧栏分类统计数
+    function updateCategoryCounts() {
+      const categories = ['全部', '超级关键词', '超级ASIN', '高潜力关键词', '高潜力ASIN', '次级潜力关键词', '次级潜力ASIN', '高竞争关键词', '高竞争ASIN', '低效关键词', '低效ASIN', '无竞争力关键词', '无竞争力ASIN', '无效关键词', '无效ASIN'];
+      categories.forEach(cat => {
+        let count;
+        if (cat === '全部') {
+          count = currentData.length;
+        } else {
+          count = currentData.filter(d => d['类型'] === cat).length;
+        }
+        const el = document.getElementById('count-' + cat);
+        if (el) el.textContent = count;
+      });
+    }
+
+    // 筛选逻辑
+    function applyFilters() {
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const portfolio = document.getElementById('portfolioSelect').value;
+      const campaign = document.getElementById('campaignSelect').value;
+      const match = document.getElementById('matchSelect').value;
+
+      currentData = mockData.filter(row => {
+        const matchSearch = row['广告活动名称'].toLowerCase().includes(search) || 
+                            row['客户搜索词/ASIN'].toLowerCase().includes(search);
+        const matchCategory = currentCategory === '全部' || row['类型'] === currentCategory;
+        const matchPortfolio = portfolio === '全部' || row['广告组合'] === portfolio;
+        const matchCampaign = campaign === '全部' || row['广告活动名称'] === campaign;
+        const matchType = match === '全部' || row['匹配类型'] === match;
+
+        return matchSearch && matchCategory && matchPortfolio && matchCampaign && matchType;
+      });
+
+      currentPage = 1;
+      sortColumn = null;
+      sortDirection = null;
+      document.querySelectorAll('th .sort-icon').forEach(el => el.textContent = '');
+      document.querySelectorAll('th').forEach(el => el.classList.remove('sort-active'));
+      renderTable();
+      updateCampaignMetrics(currentData);
+      updateSpendStructure(currentData);
+      
+      // 如果当前在否定关键词页面，也更新 else else
+    }
+
+    // 更新花费结构显示
+    function updateSpendStructure(data) {
+      let asinNoOrder = 0, asinHasOrder = 0, asinTotal = 0;
+      let keywordNoOrder = 0, keywordHasOrder = 0, keywordTotal = 0;
+      let highClickNoOrder = 0, lowClickNoOrder = 0;
+      
+      data.forEach(row => {
+        const cost = parseFloat(row.cost) || 0;
+        const clicks = parseFloat(row.clicks) || 0;
+        const orders = parseFloat(row.orders) || 0;
+        const isAsin = row.is_asin || false;
+        
+        if (isAsin) {
+          asinTotal += cost;
+          if (orders === 0) asinNoOrder += cost;
+          else asinHasOrder += cost;
+        } else {
+          keywordTotal += cost;
+          if (orders === 0) {
+            keywordNoOrder += cost;
+            if (clicks > 17) highClickNoOrder += cost;
+            if (clicks < 5) lowClickNoOrder += cost;
+          } else {
+            keywordHasOrder += cost;
+          }
+        }
+      });
+      
+      // 计算占比
+      const keywordNoOrderPct = keywordTotal > 0 ? (keywordNoOrder / keywordTotal * 100) : 0;
+      const highClickPct = keywordTotal > 0 ? (highClickNoOrder / keywordTotal * 100) : 0;
+      const lowClickPct = keywordTotal > 0 ? (lowClickNoOrder / keywordTotal * 100) : 0;
+      
+      // 更新显示
+      document.getElementById('spend-asin-no-order').textContent = '$' + asinNoOrder.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+      document.getElementById('spend-asin-has-order').textContent = '$' + asinHasOrder.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+      document.getElementById('spend-asin-total').textContent = '$' + asinTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+      document.getElementById('spend-keyword-no-order').textContent = '$' + keywordNoOrder.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+      document.getElementById('spend-keyword-has-order').textContent = '$' + keywordHasOrder.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+      document.getElementById('spend-keyword-total').textContent = '$' + keywordTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+      
+      document.getElementById('pct-keyword-no-order').textContent = keywordNoOrderPct.toFixed(2) + '%';
+      document.getElementById('pct-high-click').textContent = highClickPct.toFixed(2) + '%';
+      document.getElementById('pct-low-click').textContent = lowClickPct.toFixed(2) + '%';
+    }
+
+    // 左侧分类点击
+    function filterCategory(category, evt) {
+      currentCategory = category;
+      const btns = document.querySelectorAll('.cat-btn');
+      btns.forEach(btn => btn.classList.remove('active'));
+      if (evt) evt.currentTarget.classList.add('active');
+      else btns[0].classList.add('active');
+      applyFilters();
+    }
+
+    // 表格水平滚动
+    function scrollTable(amount) {
+      const container = document.querySelector('.table-container');
+      if (container) container.scrollBy({ left: amount, behavior: 'smooth' });
+    }
+
+    // 绑定事件
+    document.getElementById('searchInput').addEventListener('input', applyFilters);
+    document.getElementById('portfolioSelect').addEventListener('change', function() {
+      updateCampaignDropdown(this.value);
+      applyFilters();
+    });
+    document.getElementById('campaignSelect').addEventListener('change', applyFilters);
+    document.getElementById('matchSelect').addEventListener('change', applyFilters);
+
+    // 重置
+    function resetFilters() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('portfolioSelect').value = '全部';
+      document.getElementById('campaignSelect').value = '全部';
+      document.getElementById('matchSelect').value = '全部';
+      currentCategory = '全部';
+      filterCategory('全部', null);
+    }
+
+    // 导出 CSV
+    function exportCSV() {
+      if (currentData.length === 0) return alert('当前没有可导出的数据');
+      
+      // 字段中文名映射
+      const CN_HEADERS = {
+        "类型": "类型",
+        "广告组合": "广告组合",
+        "广告活动名称": "广告活动名称",
+        "广告组名称": "广告组名称",
+        "客户搜索词/ASIN": "客户搜索词/ASIN",
+        "建议定向策略": "建议定向策略",
+        "匹配类型": "匹配类型",
+        "建议策略洞察": "建议策略洞察",
+        "cost": "花费",
+        "sales": "广告销售额",
+        "orders": "订单数",
+        "clicks": "点击次数",
+        "is_asin": "是否为 ASIN"
+      };
+      
+      const headers = Object.keys(currentData[0]);
+      const cnHeaders = headers.map(h => CN_HEADERS[h] || h);
+      const csvRows = [cnHeaders.join(',')];
+      
+      currentData.forEach(row => {
+        const values = headers.map(header => {
+          const val = row[header];
+          // 金额字段保留 2 位小数
+          if (['cost', 'sales'].includes(header)) {
+            return `"${Number(val).toFixed(2)}"`;
+          }
+          // 整数字段（订单数、点击数）
+          if (['orders', 'clicks'].includes(header)) {
+            return `"${Math.round(val)}"`;
+          }
+          // 其他字段正常处理
+          return `"${val}"`;
+        });
+        csvRows.push(values.join(','));
+      });
+      
+      const blob = new Blob(['\uFEFF' + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Super_分析数据_${new Date().getTime()}.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    }
+
+    // 初始化
+    initSelects();
+    renderTable();
+    updateCategoryCounts();
+    updateCampaignMetrics(mockData);
+
+    // ========== 新增功能：更新广告活动指标 ==========
+    function updateCampaignMetrics(data) {
+        // 获取已选广告活动列表
+        const selectedCampaigns = new Set(data.map(d => d['广告活动名称']));
+        const campaignCount = selectedCampaigns.size;
+        
+        // 计算指标
+        let totalCost = 0, totalClicks = 0, totalOrders = 0, totalSales = 0;
+        data.forEach(row => {
+            totalCost += parseFloat(row.cost) || 0;
+            totalClicks += parseFloat(row.clicks) || 0;
+            totalOrders += parseFloat(row.orders) || 0;
+            totalSales += parseFloat(row.sales) || 0;
+        });
+        
+        const convRate = totalClicks > 0 ? ((totalOrders / totalClicks) * 100).toFixed(2) + '%' : '0.00%';
+        const acos = totalSales > 0 ? ((totalCost / totalSales) * 100).toFixed(1) + '%' : '0.0%';
+        
+        // 更新显示
+        document.getElementById('metrics-campaign-count').textContent = campaignCount;
+        document.getElementById('metrics-cost').textContent = '$' + totalCost.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById('metrics-clicks').textContent = totalClicks.toLocaleString('en-US');
+        document.getElementById('metrics-orders').textContent = totalOrders.toLocaleString('en-US');
+        document.getElementById('metrics-sales').textContent = '$' + totalSales.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById('metrics-conv-rate').textContent = convRate;
+        document.getElementById('metrics-acos').textContent = acos;
+    }
+
+
+  </script>
+</body>
+</html>
